@@ -187,7 +187,8 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
     print(f"[{name}] GIF → {gif_path}")
 
 
-def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=False, labels=False):
+def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=False, labels=False,
+         platform=None, custom_size=None):
     import os
     os.makedirs(out_dir, exist_ok=True)
 
@@ -204,7 +205,31 @@ def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=F
     palette = PALETTES[palette_name]
     suffix = f'_{palette_name}' if palette_name != 'original' else ''
 
-    for name, w, h, cols, rows in PLATFORMS:
+    # 自訂尺寸：根據長寬比自動決定 grid 排列
+    if custom_size:
+        w, h = custom_size
+        ratio = w / h
+        if ratio >= 4:       # 很扁（如 Substack 5:1）
+            cols, rows = 10, 2
+        elif ratio >= 2.5:   # 中扁（如 Twitter 3:1）
+            cols, rows = 6, 2
+        elif ratio >= 1.5:   # 寬（如 16:9）
+            cols, rows = 5, 2
+        else:                # 接近正方形或直式
+            cols, rows = 4, 2
+        create_banner(img, f'custom{suffix}', w, h, cols, rows, out_dir, palette, dither, labels)
+        return 0
+
+    # 篩選平台
+    platform_names = {p[0] for p in PLATFORMS}
+    targets = PLATFORMS
+    if platform:
+        if platform not in platform_names:
+            print(f"未知平台 '{platform}'，可用: {', '.join(platform_names)}")
+            return 1
+        targets = [p for p in PLATFORMS if p[0] == platform]
+
+    for name, w, h, cols, rows in targets:
         create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette, dither, labels)
     return 0
 
@@ -228,6 +253,10 @@ def cli():
                         help='Apply Floyd-Steinberg dithering (with palette)')
     parser.add_argument('-l', '--labels', action='store_true',
                         help='Add resolution labels (e.g. "4px") to each cell')
+    parser.add_argument('--platform', choices=['twitter', 'facebook', 'substack'],
+                        help='Generate for a single platform only')
+    parser.add_argument('--size', metavar='WxH',
+                        help='Custom banner size (e.g. 1920x1080)')
     parser.add_argument('--list-palettes', action='store_true',
                         help='List available palettes and exit')
 
@@ -247,12 +276,22 @@ def cli():
         if len(unknown) > 1 and args.palette == 'original':
             args.palette = unknown[1]
 
+    # Parse custom size
+    custom_size = None
+    if args.size:
+        try:
+            w, h = args.size.lower().split('x')
+            custom_size = (int(w), int(h))
+        except (ValueError, TypeError):
+            print(f"無效尺寸格式 '{args.size}'，請用 WxH（如 1920x1080）")
+            return 1
+
     if args.all_palettes:
         for pal_name in PALETTES:
-            main(args.input, args.output, pal_name, args.dither, args.labels)
+            main(args.input, args.output, pal_name, args.dither, args.labels, args.platform, custom_size)
         return 0
 
-    return main(args.input, args.output, args.palette, args.dither, args.labels)
+    return main(args.input, args.output, args.palette, args.dither, args.labels, args.platform, custom_size)
 
 
 if __name__ == '__main__':
