@@ -16,7 +16,7 @@ PixelMe lets anyone create their own version of this progression as a social med
 
 ## Output
 
-Generates banners for 3 platforms:
+Generates banners for 3 platforms — both static PNG and animated GIF:
 
 | Platform | Size | Layout |
 |----------|------|--------|
@@ -24,12 +24,17 @@ Generates banners for 3 platforms:
 | Facebook | 820 x 312 | 5 x 2 |
 | Substack | 1500 x 300 | 10 x 2 |
 
+The GIF animates from 1x1 through each pixelation stage, auto-looping.
+
 ## Previews
 
 ### Sample 1
 
-**Twitter**
+**Twitter (static)**
 ![Twitter banner](previews/sample1/banner_twitter.png)
+
+**Twitter (animated)**
+![Twitter GIF](previews/sample1/banner_twitter.gif)
 
 **Facebook**
 ![Facebook banner](previews/sample1/banner_facebook.png)
@@ -41,8 +46,11 @@ Generates banners for 3 platforms:
 
 ### Sample 2
 
-**Twitter**
+**Twitter (static)**
 ![Twitter banner](previews/sample2/banner_twitter.png)
+
+**Twitter (animated)**
+![Twitter GIF](previews/sample2/banner_twitter.gif)
 
 **Facebook**
 ![Facebook banner](previews/sample2/banner_facebook.png)
@@ -54,8 +62,11 @@ Generates banners for 3 platforms:
 
 ### Sample 3
 
-**Twitter**
+**Twitter (static)**
 ![Twitter banner](previews/sample3/banner_twitter.png)
+
+**Twitter (animated)**
+![Twitter GIF](previews/sample3/banner_twitter.gif)
 
 **Facebook**
 ![Facebook banner](previews/sample3/banner_facebook.png)

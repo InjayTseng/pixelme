@@ -66,6 +66,19 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.'):
     banner.save(output)
     print(f"[{name}] {width}x{height} ({cols}x{rows}) → {output}")
 
+    # 生成 GIF 動畫：逐格從低解析度到高解析度
+    frames = []
+    for size in grid_sizes:
+        frame = img.resize((size, size), resample=Image.Resampling.LANCZOS)
+        frame = frame.resize((width, height), resample=Image.Resampling.NEAREST)
+        frames.append(frame)
+    # 最後一幀停留久一點
+    gif_path = f'{out_dir}/banner_{name}.gif'
+    durations = [300] * (len(frames) - 1) + [1500]
+    frames[0].save(gif_path, save_all=True, append_images=frames[1:],
+                   duration=durations, loop=0)
+    print(f"[{name}] GIF animation → {gif_path}")
+
 
 def main(input_path='avatar.png', out_dir='.'):
     import os
