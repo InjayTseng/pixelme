@@ -92,7 +92,13 @@ PLATFORMS = [
     ('twitter',   1500, 500,  6, 2),   # 3:1
     ('facebook',  820,  312,  5, 2),   # ~2.6:1
     ('substack',  1500, 300,  10, 2),  # 5:1
+    ('linkedin',  1584, 396,  8, 2),   # 4:1
+    ('youtube',   2560, 1440, 8, 2),   # 16:9
+    ('discord',   960,  540,  6, 2),   # 16:9
 ]
+
+PLATFORM_NAMES = [p[0] for p in PLATFORMS]
+DEFAULT_PLATFORMS = ['twitter', 'facebook', 'substack']
 
 
 def pick_grid_sizes(count, cell_size, end_fraction=0.15):
@@ -236,13 +242,13 @@ def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=F
         return 0
 
     # 篩選平台
-    platform_names = {p[0] for p in PLATFORMS}
-    targets = PLATFORMS
     if platform:
-        if platform not in platform_names:
-            print(f"未知平台 '{platform}'，可用: {', '.join(platform_names)}")
+        if platform not in PLATFORM_NAMES:
+            print(f"未知平台 '{platform}'，可用: {', '.join(PLATFORM_NAMES)}")
             return 1
         targets = [p for p in PLATFORMS if p[0] == platform]
+    else:
+        targets = [p for p in PLATFORMS if p[0] in DEFAULT_PLATFORMS]
 
     for name, w, h, cols, rows in targets:
         create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette, dither, labels, no_gif)
@@ -268,8 +274,10 @@ def cli():
                         help='Apply Floyd-Steinberg dithering (with palette)')
     parser.add_argument('-l', '--labels', action='store_true',
                         help='Add resolution labels (e.g. "4px") to each cell')
-    parser.add_argument('--platform', choices=['twitter', 'facebook', 'substack'],
-                        help='Generate for a single platform only')
+    parser.add_argument('--platform', choices=PLATFORM_NAMES,
+                        help='Generate for a single platform (default: twitter, facebook, substack)')
+    parser.add_argument('--list-platforms', action='store_true',
+                        help='List available platforms and exit')
     parser.add_argument('--size', metavar='WxH',
                         help='Custom banner size (e.g. 1920x1080)')
     parser.add_argument('--no-gif', action='store_true',
@@ -284,6 +292,12 @@ def cli():
         for name, pal in PALETTES.items():
             colors = len(pal) if pal else 'full'
             print(f"  {name:12s} ({colors} colors)")
+        return 0
+
+    if args.list_platforms:
+        for name, w, h, cols, rows in PLATFORMS:
+            default = ' (default)' if name in DEFAULT_PLATFORMS else ''
+            print(f"  {name:12s} {w}x{h}  {cols}x{rows}{default}")
         return 0
 
     # Legacy compat: if unknown positional args, treat as outdir / palette
