@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 
 # --- Color Palettes ---
@@ -124,7 +124,25 @@ def pick_grid_sizes(count, cell_size, end_fraction=0.15):
     return result[:count]
 
 
-def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=None, dither=False):
+def draw_label(banner, text, x, y, cell_w, cell_h):
+    """在 cell 底部中央畫上解析度標籤"""
+    draw = ImageDraw.Draw(banner)
+    font_size = max(10, min(cell_w, cell_h) // 8)
+    try:
+        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", font_size)
+    except (OSError, IOError):
+        font = ImageFont.load_default()
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    tx = x + (cell_w - tw) // 2
+    ty = y + cell_h - th - max(4, cell_h // 16)
+    # 半透明背景用黑色描邊模擬
+    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        draw.text((tx + dx, ty + dy), text, fill=(0, 0, 0), font=font)
+    draw.text((tx, ty), text, fill=(255, 255, 255), font=font)
+
+
+def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=None, dither=False, labels=False):
     cell_w = width // cols
     cell_h = height // rows
     count = cols * rows
@@ -137,6 +155,8 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
         c = index % cols
         cell = pixelate(img, size, cell_w, cell_h, palette, dither)
         banner.paste(cell, (c * cell_w, r * cell_h))
+        if labels:
+            draw_label(banner, f"{size}px", c * cell_w, r * cell_h, cell_w, cell_h)
 
     output = f'{out_dir}/banner_{name}.png'
     banner.save(output)
@@ -158,7 +178,7 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
     print(f"[{name}] GIF → {gif_path}")
 
 
-def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=False):
+def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=False, labels=False):
     import os
     os.makedirs(out_dir, exist_ok=True)
 
@@ -176,7 +196,7 @@ def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=F
     suffix = f'_{palette_name}' if palette_name != 'original' else ''
 
     for name, w, h, cols, rows in PLATFORMS:
-        create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette, dither)
+        create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette, dither, labels)
     return 0
 
 
@@ -195,6 +215,8 @@ def cli():
                         help='Color palette (default: original)')
     parser.add_argument('-d', '--dither', action='store_true',
                         help='Apply Floyd-Steinberg dithering (with palette)')
+    parser.add_argument('-l', '--labels', action='store_true',
+                        help='Add resolution labels (e.g. "4px") to each cell')
     parser.add_argument('--list-palettes', action='store_true',
                         help='List available palettes and exit')
 
@@ -214,7 +236,7 @@ def cli():
         if len(unknown) > 1 and args.palette == 'original':
             args.palette = unknown[1]
 
-    return main(args.input, args.output, args.palette, args.dither)
+    return main(args.input, args.output, args.palette, args.dither, args.labels)
 
 
 if __name__ == '__main__':

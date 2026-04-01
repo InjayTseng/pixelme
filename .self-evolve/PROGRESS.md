@@ -22,3 +22,11 @@
 - All P0 and P1 tasks complete
 
 **Next iteration should focus on:** P2 tasks — dithering, GIF optimization, labels, cleanup
+
+## Iteration 3-5 — 2026-04-01 (self-evolve #3-5)
+- Added Floyd-Steinberg dithering (--dither flag)
+- Optimized GIF with 128-color quantization (~13% smaller)
+- Added cell resolution labels (--labels flag)
+- Verified stale artifacts already cleaned
+
+**All 10 tasks DONE. Next: REVIEW + LEARN phase, or discover new tasks.**

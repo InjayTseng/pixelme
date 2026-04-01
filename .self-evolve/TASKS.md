@@ -55,10 +55,10 @@ Generated: 2026-04-01
 - **Why**: Labels like "1px", "4px" make the progression self-explanatory to viewers.
 - **Acceptance**: `python main.py avatar.png out/ --labels` adds text labels to each cell.
 - **Files**: `main.py`
-- **Status**: TODO
+- **Status**: DONE
 
 ### [P2] Clean up stale artifacts from repo
 - **Why**: Old bw files and results.jpg are committed but feature was removed.
 - **Acceptance**: `git ls-files | grep -E 'banner_.*bw|results\.jpg'` returns empty.
 - **Files**: `.gitignore`, git rm
-- **Status**: TODO
+- **Status**: DONE (already cleaned in prior commits)
