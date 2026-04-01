@@ -2,8 +2,8 @@
 avatar.png
 im_a_square_banner.jpg
 
-# Generated banners
-banner_*.png
+# Generated banners (root level only)
+/banner_*.png
 results.jpg
 
 # Python

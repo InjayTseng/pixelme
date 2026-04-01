@@ -48,7 +48,7 @@ def pick_grid_sizes(count, cell_size, end_fraction=0.15):
     return result[:count]
 
 
-def create_banner(img, name, width, height, cols, rows):
+def create_banner(img, name, width, height, cols, rows, out_dir='.'):
     cell_w = width // cols
     cell_h = height // rows
     count = cols * rows
@@ -62,12 +62,15 @@ def create_banner(img, name, width, height, cols, rows):
         cell = pixelate(img, size, cell_w, cell_h)
         banner.paste(cell, (c * cell_w, r * cell_h))
 
-    output = f'banner_{name}.png'
+    output = f'{out_dir}/banner_{name}.png'
     banner.save(output)
     print(f"[{name}] {width}x{height} ({cols}x{rows}) → {output}")
 
 
-def main(input_path='avatar.png'):
+def main(input_path='avatar.png', out_dir='.'):
+    import os
+    os.makedirs(out_dir, exist_ok=True)
+
     try:
         img = Image.open(input_path).convert('RGB')
     except FileNotFoundError:
@@ -77,8 +80,12 @@ def main(input_path='avatar.png'):
     img_bw = img.convert('L').convert('RGB')
 
     for name, w, h, cols, rows in PLATFORMS:
-        create_banner(img, name, w, h, cols, rows)
-        create_banner(img_bw, f'{name}_bw', w, h, cols, rows)
+        create_banner(img, name, w, h, cols, rows, out_dir)
+        create_banner(img_bw, f'{name}_bw', w, h, cols, rows, out_dir)
 
 
-main()
+if __name__ == '__main__':
+    import sys
+    input_path = sys.argv[1] if len(sys.argv) > 1 else 'avatar.png'
+    out_dir = sys.argv[2] if len(sys.argv) > 2 else '.'
+    main(input_path, out_dir)
