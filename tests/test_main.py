@@ -4,7 +4,8 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from main import apply_palette, pick_grid_sizes, pixelate, create_banner, main, PALETTES
+from main import (apply_palette, pick_grid_sizes, pixelate, create_banner, main,
+                   PALETTES, PLATFORMS, PLATFORM_NAMES, DEFAULT_PLATFORMS)
 
 
 # --- pick_grid_sizes ---
@@ -152,3 +153,84 @@ def test_main_invalid_palette():
         test_img.save(input_path)
         result = main(input_path, tmpdir, 'nonexistent_palette')
         assert result == 1
+
+
+# --- --platform ---
+
+def test_main_single_platform():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        test_img = Image.new('RGB', (64, 64), color=(100, 150, 200))
+        input_path = os.path.join(tmpdir, 'test.png')
+        test_img.save(input_path)
+        out_dir = os.path.join(tmpdir, 'output')
+        result = main(input_path, out_dir, platform='linkedin', no_gif=True)
+        assert result == 0
+        assert os.path.exists(os.path.join(out_dir, 'banner_linkedin.png'))
+        assert not os.path.exists(os.path.join(out_dir, 'banner_twitter.png'))
+
+
+def test_main_invalid_platform():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        test_img = Image.new('RGB', (10, 10))
+        input_path = os.path.join(tmpdir, 'test.png')
+        test_img.save(input_path)
+        result = main(input_path, tmpdir, platform='tiktok')
+        assert result == 1
+
+
+# --- --size ---
+
+def test_main_custom_size():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        test_img = Image.new('RGB', (64, 64))
+        input_path = os.path.join(tmpdir, 'test.png')
+        test_img.save(input_path)
+        out_dir = os.path.join(tmpdir, 'output')
+        result = main(input_path, out_dir, custom_size=(800, 200), no_gif=True)
+        assert result == 0
+        banner = Image.open(os.path.join(out_dir, 'banner_custom.png'))
+        assert banner.size == (800, 200)
+
+
+# --- --no-gif ---
+
+def test_create_banner_no_gif():
+    img = Image.new('RGB', (100, 100))
+    with tempfile.TemporaryDirectory() as tmpdir:
+        create_banner(img, 'nogif', 300, 100, 3, 1, tmpdir, no_gif=True)
+        assert os.path.exists(os.path.join(tmpdir, 'banner_nogif.png'))
+        assert not os.path.exists(os.path.join(tmpdir, 'banner_nogif.gif'))
+
+
+# --- --labels ---
+
+def test_create_banner_labels_differ():
+    img = Image.new('RGB', (100, 100), color=(50, 100, 150))
+    with tempfile.TemporaryDirectory() as tmpdir:
+        create_banner(img, 'nolbl', 300, 100, 3, 1, tmpdir, no_gif=True)
+        create_banner(img, 'lbl', 300, 100, 3, 1, tmpdir, labels=True, no_gif=True)
+        a = np.array(Image.open(os.path.join(tmpdir, 'banner_nolbl.png')))
+        b = np.array(Image.open(os.path.join(tmpdir, 'banner_lbl.png')))
+        assert not np.array_equal(a, b)
+
+
+# --- all palettes ---
+
+def test_main_all_palettes():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        test_img = Image.new('RGB', (32, 32))
+        input_path = os.path.join(tmpdir, 'test.png')
+        test_img.save(input_path)
+        out_dir = os.path.join(tmpdir, 'output')
+        for pal in PALETTES:
+            main(input_path, out_dir, pal, no_gif=True)
+        for pal in ['gameboy', 'nes', 'sepia']:
+            assert os.path.exists(os.path.join(out_dir, f'banner_twitter_{pal}.png'))
+
+
+# --- platform constants ---
+
+def test_platform_names_consistent():
+    assert set(PLATFORM_NAMES) == {p[0] for p in PLATFORMS}
+    for d in DEFAULT_PLATFORMS:
+        assert d in PLATFORM_NAMES

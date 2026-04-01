@@ -10,47 +10,52 @@ PixelMe generates pixel-art progression banners from profile photos for social m
 
 ```bash
 pip install Pillow numpy
-
-# Default (reads avatar.png, outputs to current dir)
-python main.py
-
-# Custom input, output dir, and palette
-python main.py path/to/photo.png output_dir/ gameboy
+python main.py photo.png -o out/ -p gameboy --dither --labels
+python main.py --help
 ```
+
+## Testing
+
+```bash
+python -m pytest tests/ -v
+```
+
+24 tests covering: `pick_grid_sizes`, `apply_palette`, `pixelate`, `create_banner`, `main()`, platform selection, custom size, no-gif, labels, all palettes.
 
 ## Architecture
 
-Single file `main.py` with these core functions:
+Single file `main.py` (~300 lines) with `cli()` entry point using argparse.
 
-- `pixelate(img, grid_size, cell_w, cell_h, palette)` — downscale to grid_size, optional palette mapping, upscale with NEAREST
-- `apply_palette(img, palette)` — numpy vectorized nearest-color mapping to a palette array
-- `pick_grid_sizes(count, cell_size, end_fraction)` — log-distributed pixelation levels, capped at fraction of cell size
-- `create_banner(img, name, w, h, cols, rows, out_dir, palette)` — composes grid + generates GIF animation
-- `main(input_path, out_dir, palette_name)` — entry point, iterates over platforms
+Core functions:
+- `pixelate(img, grid_size, cell_w, cell_h, palette, dither)` — downscale → palette → upscale NEAREST
+- `apply_palette(img, palette, dither)` — vectorized nearest-color or Floyd-Steinberg dithering
+- `pick_grid_sizes(count, cell_size, end_fraction=0.15)` — log-distributed pixelation levels
+- `create_banner(img, name, w, h, cols, rows, out_dir, palette, dither, labels, no_gif)` — grid + optional GIF
+- `main(input_path, out_dir, palette_name, dither, labels, platform, custom_size, no_gif)` — orchestrator
+- `draw_label()` — resolution text overlay with cross-platform font cache
 
 ## Platforms
 
-Defined in `PLATFORMS` list as `(name, width, height, cols, rows)`:
+`PLATFORMS` list, `DEFAULT_PLATFORMS` = twitter/facebook/substack:
 
 | Platform | Size | Grid |
 |----------|------|------|
-| Twitter/X | 1500x500 | 6x2 |
-| Facebook | 820x312 | 5x2 |
-| Substack | 1500x300 | 10x2 |
+| twitter | 1500x500 | 6x2 |
+| facebook | 820x312 | 5x2 |
+| substack | 1500x300 | 10x2 |
+| linkedin | 1584x396 | 8x2 |
+| youtube | 2560x1440 | 8x2 |
+| discord | 960x540 | 6x2 |
 
-## Palettes
+## CLI Flags
 
-`PALETTES` dict: `original` (no mapping), `gameboy` (4 colors), `nes` (36 colors), `sepia` (12 colors).
+`-p/--palette`, `--all-palettes`, `-d/--dither`, `-l/--labels`, `--platform`, `--size WxH`, `--no-gif`, `--list-palettes`, `--list-platforms`
 
-## Output
-
-Each platform generates:
-- `banner_{name}.png` — static grid banner
-- `banner_{name}.gif` — animated progression (300ms/frame, last frame 1500ms)
+Legacy positional args (`main.py <input> <outdir> <palette>`) still supported via `parse_known_args`.
 
 ## Notes
 
-- Uses NEAREST resampling for sharp pixel block edges
-- `end_fraction=0.15` caps max pixelation at ~1/6 of cell resolution to maintain pixel-art feel
-- Sample images in `samples/` from Unsplash (free license)
+- `end_fraction=0.15` caps max pixelation at ~1/6 of cell resolution
+- Font cache in `_font_cache` dict, probes macOS/Linux/Windows paths once per size
+- GIF frames quantized to 128 colors for size optimization
 - Self-evolve pipeline state in `.self-evolve/`
