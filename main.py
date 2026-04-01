@@ -77,11 +77,8 @@ def main(input_path='avatar.png', out_dir='.'):
         print("找不到圖片，請確認檔名與路徑。")
         return
 
-    img_bw = img.convert('L').convert('RGB')
-
     for name, w, h, cols, rows in PLATFORMS:
         create_banner(img, name, w, h, cols, rows, out_dir)
-        create_banner(img_bw, f'{name}_bw', w, h, cols, rows, out_dir)
 
 
 if __name__ == '__main__':

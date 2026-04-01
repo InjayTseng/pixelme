@@ -6,7 +6,7 @@ Each banner shows your avatar evolving from a single pixel to a recognizable (bu
 
 ## Output
 
-Generates banners for 3 platforms in both color and B&W:
+Generates banners for 3 platforms:
 
 | Platform | Size | Layout |
 |----------|------|--------|
@@ -21,9 +21,6 @@ Generates banners for 3 platforms in both color and B&W:
 **Twitter**
 ![Twitter banner](previews/sample1/banner_twitter.png)
 
-**Twitter (B&W)**
-![Twitter B&W banner](previews/sample1/banner_twitter_bw.png)
-
 **Facebook**
 ![Facebook banner](previews/sample1/banner_facebook.png)
 
@@ -37,9 +34,6 @@ Generates banners for 3 platforms in both color and B&W:
 **Twitter**
 ![Twitter banner](previews/sample2/banner_twitter.png)
 
-**Twitter (B&W)**
-![Twitter B&W banner](previews/sample2/banner_twitter_bw.png)
-
 **Facebook**
 ![Facebook banner](previews/sample2/banner_facebook.png)
 
@@ -52,9 +46,6 @@ Generates banners for 3 platforms in both color and B&W:
 
 **Twitter**
 ![Twitter banner](previews/sample3/banner_twitter.png)
-
-**Twitter (B&W)**
-![Twitter B&W banner](previews/sample3/banner_twitter_bw.png)
 
 **Facebook**
 ![Facebook banner](previews/sample3/banner_facebook.png)
