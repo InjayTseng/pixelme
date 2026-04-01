@@ -74,16 +74,30 @@ The GIF animates from 1x1 through each pixelation stage, auto-looping.
 **Substack**
 ![Substack banner](previews/sample3/banner_substack.png)
 
+## Color Palettes
+
+4 built-in palettes: `original`, `gameboy`, `nes`, `sepia`
+
+| Palette | Preview |
+|---------|---------|
+| **Original** | ![original](previews/sample1/banner_twitter.png) |
+| **GameBoy** | ![gameboy](previews/sample1/banner_twitter_gameboy.png) |
+| **NES** | ![nes](previews/sample1/banner_twitter_nes.png) |
+| **Sepia** | ![sepia](previews/sample1/banner_twitter_sepia.png) |
+
 ## Usage
 
 ```bash
-pip install Pillow
+pip install Pillow numpy
 
 # Default (reads avatar.png, outputs to current directory)
 python main.py
 
 # Custom input and output directory
 python main.py path/to/photo.png output_dir/
+
+# With color palette (original, gameboy, nes, sepia)
+python main.py path/to/photo.png output_dir/ gameboy
 ```
 
 ## License
