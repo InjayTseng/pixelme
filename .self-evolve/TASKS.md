@@ -31,13 +31,13 @@ Generated: 2026-04-01
 - **Why**: Zero tests; edge cases in `pick_grid_sizes`, `apply_palette`, `pixelate` are invisible.
 - **Acceptance**: `python -m pytest tests/ -v` passes with 10+ test cases.
 - **Files**: `tests/test_main.py` (new)
-- **Status**: TODO
+- **Status**: DONE (16 tests)
 
 ### [P1] Add `argparse` CLI with `--help`, `--palette`, `--list-palettes`
 - **Why**: Positional-only sys.argv gives no help, no validation, no discoverability.
 - **Acceptance**: `python main.py --help` prints usage; `python main.py --list-palettes` works.
 - **Files**: `main.py`
-- **Status**: TODO
+- **Status**: DONE
 
 ### [P2] Add Floyd-Steinberg dithering option
 - **Why**: Nearest-color produces harsh banding; dithering makes gameboy/sepia look dramatically better.

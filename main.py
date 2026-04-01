@@ -136,23 +136,56 @@ def main(input_path='avatar.png', out_dir='.', palette_name='original'):
     try:
         img = Image.open(input_path).convert('RGB')
     except FileNotFoundError:
-        print("找不到圖片，請確認檔名與路徑。")
-        return
+        print(f"找不到圖片: {input_path}")
+        return 1
 
     if palette_name not in PALETTES:
         print(f"未知調色盤 '{palette_name}'，可用: {', '.join(PALETTES.keys())}")
-        return
+        return 1
 
     palette = PALETTES[palette_name]
     suffix = f'_{palette_name}' if palette_name != 'original' else ''
 
     for name, w, h, cols, rows in PLATFORMS:
         create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette)
+    return 0
+
+
+def cli():
+    import argparse
+    parser = argparse.ArgumentParser(
+        prog='pixelme',
+        description='Generate pixel-art progression banners for social media.',
+    )
+    parser.add_argument('input', nargs='?', default='avatar.png',
+                        help='Input image path (default: avatar.png)')
+    parser.add_argument('-o', '--output', default='.',
+                        help='Output directory (default: current dir)')
+    parser.add_argument('-p', '--palette', default='original',
+                        choices=list(PALETTES.keys()),
+                        help='Color palette (default: original)')
+    parser.add_argument('--list-palettes', action='store_true',
+                        help='List available palettes and exit')
+
+    # Support legacy positional args: main.py <input> <outdir> <palette>
+    args, unknown = parser.parse_known_args()
+
+    if args.list_palettes:
+        for name, pal in PALETTES.items():
+            colors = len(pal) if pal else 'full'
+            print(f"  {name:12s} ({colors} colors)")
+        return 0
+
+    # Legacy compat: if unknown positional args, treat as outdir / palette
+    if unknown:
+        if args.output == '.':
+            args.output = unknown[0]
+        if len(unknown) > 1 and args.palette == 'original':
+            args.palette = unknown[1]
+
+    return main(args.input, args.output, args.palette)
 
 
 if __name__ == '__main__':
     import sys
-    input_path = sys.argv[1] if len(sys.argv) > 1 else 'avatar.png'
-    out_dir = sys.argv[2] if len(sys.argv) > 2 else '.'
-    palette_name = sys.argv[3] if len(sys.argv) > 3 else 'original'
-    main(input_path, out_dir, palette_name)
+    sys.exit(cli() or 0)
