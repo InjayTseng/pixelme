@@ -33,6 +33,7 @@ def apply_palette(img, palette):
     """將圖片的每個像素映射到最近的調色盤顏色"""
     if palette is None:
         return img
+    img = img.convert('RGB')
     arr = np.array(img, dtype=np.float32)
     pal = np.array(palette, dtype=np.float32)
     # 展平成 (N, 3)，計算每個像素到每個調色盤顏色的距離
@@ -77,6 +78,7 @@ def pick_grid_sizes(count, cell_size, end_fraction=0.15):
         val = int(round(2 ** (t * math.log2(end_size))))
         sizes.add(max(1, val))
     result = sorted(sizes)
+    # 補中間值直到數量足夠
     while len(result) < count:
         gaps = []
         for j in range(len(result) - 1):
@@ -88,6 +90,9 @@ def pick_grid_sizes(count, cell_size, end_fraction=0.15):
         gaps.sort(reverse=True)
         result.append(gaps[0][1])
         result = sorted(set(result))
+    # 如果仍不夠（range 太小），重複最後一個值填滿
+    while len(result) < count:
+        result.append(result[-1])
     return result[:count]
 
 

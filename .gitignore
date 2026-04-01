@@ -9,3 +9,6 @@ results.jpg
 # Python
 __pycache__/
 *.pyc
+
+# self-evolve logs
+.self-evolve/logs/
