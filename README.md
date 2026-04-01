@@ -94,10 +94,22 @@ pip install Pillow numpy
 python main.py
 
 # Custom input and output directory
-python main.py path/to/photo.png output_dir/
+python main.py photo.png -o output_dir/
 
-# With color palette (original, gameboy, nes, sepia)
-python main.py path/to/photo.png output_dir/ gameboy
+# With color palette
+python main.py photo.png -p gameboy
+
+# All palettes at once
+python main.py photo.png --all-palettes
+
+# With Floyd-Steinberg dithering (smoother gradients)
+python main.py photo.png -p sepia --dither
+
+# With resolution labels on each cell
+python main.py photo.png --labels
+
+# See all options
+python main.py --help
 ```
 
 ## License

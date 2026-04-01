@@ -128,9 +128,18 @@ def draw_label(banner, text, x, y, cell_w, cell_h):
     """在 cell 底部中央畫上解析度標籤"""
     draw = ImageDraw.Draw(banner)
     font_size = max(10, min(cell_w, cell_h) // 8)
-    try:
-        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", font_size)
-    except (OSError, IOError):
+    font = None
+    for path in [
+        "/System/Library/Fonts/Helvetica.ttc",       # macOS
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # Linux
+        "C:/Windows/Fonts/arial.ttf",                 # Windows
+    ]:
+        try:
+            font = ImageFont.truetype(path, font_size)
+            break
+        except (OSError, IOError):
+            continue
+    if font is None:
         font = ImageFont.load_default()
     bbox = draw.textbbox((0, 0), text, font=font)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
@@ -213,6 +222,8 @@ def cli():
     parser.add_argument('-p', '--palette', default='original',
                         choices=list(PALETTES.keys()),
                         help='Color palette (default: original)')
+    parser.add_argument('--all-palettes', action='store_true',
+                        help='Generate banners for all palettes at once')
     parser.add_argument('-d', '--dither', action='store_true',
                         help='Apply Floyd-Steinberg dithering (with palette)')
     parser.add_argument('-l', '--labels', action='store_true',
@@ -235,6 +246,11 @@ def cli():
             args.output = unknown[0]
         if len(unknown) > 1 and args.palette == 'original':
             args.palette = unknown[1]
+
+    if args.all_palettes:
+        for pal_name in PALETTES:
+            main(args.input, args.output, pal_name, args.dither, args.labels)
+        return 0
 
     return main(args.input, args.output, args.palette, args.dither, args.labels)
 
