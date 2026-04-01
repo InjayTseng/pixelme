@@ -30,3 +30,14 @@
 - Verified stale artifacts already cleaned
 
 **All 10 tasks DONE. Next: REVIEW + LEARN phase, or discover new tasks.**
+
+## Iterations 6-13 — 2026-04-01 (self-evolve #6-13)
+- Added --all-palettes, cross-platform font cache, --platform, --size, --no-gif
+- Added LinkedIn, YouTube, Discord platform presets
+- Hero GIF in README, feature showcase section
+- Expanded tests from 17 → 24
+- REVIEW + LEARN cycle (font cache, knowledge consolidation)
+- Streamlit web UI (app.py) with dark theme
+- Streamlit Cloud deployment config
+
+**v1.0 feature-complete. 13 self-evolve iterations total.**
