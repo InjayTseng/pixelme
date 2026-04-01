@@ -30,3 +30,7 @@
 - 4 palettes implemented: original, gameboy (4 colors), nes (36 colors), sepia (12 colors)
 - Influencer seeding identified as top growth strategy
 - GIF animation is the #1 viral hook — auto-plays on Twitter/X
+- Font caching matters — draw_label was probing filesystem on every cell
+- Floyd-Steinberg dithering is pure Python (slow on large images) — consider Cython or Pillow's built-in quantize dither for perf
+- `create_banner` has 11 params now — next refactor should bundle into a config dataclass
+- Legacy positional args via parse_known_args silently swallows typos — acceptable trade-off for backwards compat

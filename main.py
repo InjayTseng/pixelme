@@ -124,23 +124,35 @@ def pick_grid_sizes(count, cell_size, end_fraction=0.15):
     return result[:count]
 
 
+_font_cache = {}
+
+_FONT_PATHS = [
+    "/System/Library/Fonts/Helvetica.ttc",       # macOS
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # Linux
+    "C:/Windows/Fonts/arial.ttf",                 # Windows
+]
+
+
+def _get_font(size):
+    if size in _font_cache:
+        return _font_cache[size]
+    for path in _FONT_PATHS:
+        try:
+            font = ImageFont.truetype(path, size)
+            _font_cache[size] = font
+            return font
+        except (OSError, IOError):
+            continue
+    font = ImageFont.load_default()
+    _font_cache[size] = font
+    return font
+
+
 def draw_label(banner, text, x, y, cell_w, cell_h):
     """在 cell 底部中央畫上解析度標籤"""
     draw = ImageDraw.Draw(banner)
     font_size = max(10, min(cell_w, cell_h) // 8)
-    font = None
-    for path in [
-        "/System/Library/Fonts/Helvetica.ttc",       # macOS
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # Linux
-        "C:/Windows/Fonts/arial.ttf",                 # Windows
-    ]:
-        try:
-            font = ImageFont.truetype(path, font_size)
-            break
-        except (OSError, IOError):
-            continue
-    if font is None:
-        font = ImageFont.load_default()
+    font = _get_font(font_size)
     bbox = draw.textbbox((0, 0), text, font=font)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
     tx = x + (cell_w - tw) // 2
@@ -151,7 +163,7 @@ def draw_label(banner, text, x, y, cell_w, cell_h):
     draw.text((tx, ty), text, fill=(255, 255, 255), font=font)
 
 
-def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=None, dither=False, labels=False):
+def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=None, dither=False, labels=False, no_gif=False):
     cell_w = width // cols
     cell_h = height // rows
     count = cols * rows
@@ -171,6 +183,9 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
     banner.save(output)
     print(f"[{name}] {width}x{height} ({cols}x{rows}) → {output}")
 
+    if no_gif:
+        return
+
     # GIF 動畫（每幀量化到 128 色以減小檔案大小）
     frames = []
     for size in grid_sizes:
@@ -188,7 +203,7 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
 
 
 def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=False, labels=False,
-         platform=None, custom_size=None):
+         platform=None, custom_size=None, no_gif=False):
     import os
     os.makedirs(out_dir, exist_ok=True)
 
@@ -217,7 +232,7 @@ def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=F
             cols, rows = 5, 2
         else:                # 接近正方形或直式
             cols, rows = 4, 2
-        create_banner(img, f'custom{suffix}', w, h, cols, rows, out_dir, palette, dither, labels)
+        create_banner(img, f'custom{suffix}', w, h, cols, rows, out_dir, palette, dither, labels, no_gif)
         return 0
 
     # 篩選平台
@@ -230,7 +245,7 @@ def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=F
         targets = [p for p in PLATFORMS if p[0] == platform]
 
     for name, w, h, cols, rows in targets:
-        create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette, dither, labels)
+        create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette, dither, labels, no_gif)
     return 0
 
 
@@ -257,6 +272,8 @@ def cli():
                         help='Generate for a single platform only')
     parser.add_argument('--size', metavar='WxH',
                         help='Custom banner size (e.g. 1920x1080)')
+    parser.add_argument('--no-gif', action='store_true',
+                        help='Skip GIF generation, only output PNG')
     parser.add_argument('--list-palettes', action='store_true',
                         help='List available palettes and exit')
 
@@ -288,10 +305,10 @@ def cli():
 
     if args.all_palettes:
         for pal_name in PALETTES:
-            main(args.input, args.output, pal_name, args.dither, args.labels, args.platform, custom_size)
+            main(args.input, args.output, pal_name, args.dither, args.labels, args.platform, custom_size, args.no_gif)
         return 0
 
-    return main(args.input, args.output, args.palette, args.dither, args.labels, args.platform, custom_size)
+    return main(args.input, args.output, args.palette, args.dither, args.labels, args.platform, custom_size, args.no_gif)
 
 
 if __name__ == '__main__':
