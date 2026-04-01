@@ -43,7 +43,7 @@ Generated: 2026-04-01
 - **Why**: Nearest-color produces harsh banding; dithering makes gameboy/sepia look dramatically better.
 - **Acceptance**: `python main.py avatar.png out/ --palette gameboy --dither` produces visibly smoother output.
 - **Files**: `main.py`
-- **Status**: TODO
+- **Status**: DONE
 
 ### [P2] Optimize GIF file size with per-frame palette quantization
 - **Why**: Substack GIF can exceed Twitter's 5MB limit; frames saved as full RGB without quantization.

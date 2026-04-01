@@ -56,6 +56,21 @@ def test_apply_palette_rgba_input():
     assert result.mode == 'RGB'
 
 
+def test_apply_palette_dither():
+    """Dithering should produce different output than no-dither."""
+    img = Image.new('RGB', (8, 8))
+    # Gradient image
+    for x in range(8):
+        for y in range(8):
+            img.putpixel((x, y), (x * 32, y * 32, 128))
+    palette = [(0, 0, 0), (255, 255, 255)]
+    no_dither = np.array(apply_palette(img, palette, dither=False))
+    with_dither = np.array(apply_palette(img, palette, dither=True))
+    # Both should have same shape, but different pixel values
+    assert no_dither.shape == with_dither.shape
+    assert not np.array_equal(no_dither, with_dither)
+
+
 def test_apply_palette_preserves_dimensions():
     img = Image.new('RGB', (16, 8))
     palette = [(0, 0, 0), (255, 255, 255)]

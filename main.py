@@ -29,32 +29,60 @@ PALETTES = {
 }
 
 
-def apply_palette(img, palette):
+def _find_nearest(pixel, pal):
+    """找到調色盤中最接近的顏色，回傳 (nearest_color, error)"""
+    dists = np.sum((pal - pixel) ** 2, axis=1)
+    idx = np.argmin(dists)
+    return pal[idx], pixel - pal[idx]
+
+
+def apply_palette(img, palette, dither=False):
     """將圖片的每個像素映射到最近的調色盤顏色"""
     if palette is None:
         return img
     img = img.convert('RGB')
-    arr = np.array(img, dtype=np.float32)
     pal = np.array(palette, dtype=np.float32)
-    # 展平成 (N, 3)，計算每個像素到每個調色盤顏色的距離
+
+    if dither:
+        # Floyd-Steinberg dithering
+        arr = np.array(img, dtype=np.float32)
+        h, w = arr.shape[:2]
+        for y in range(h):
+            for x in range(w):
+                old = arr[y, x].copy()
+                nearest, error = _find_nearest(old, pal)
+                arr[y, x] = nearest
+                # 擴散誤差到鄰近像素
+                if x + 1 < w:
+                    arr[y, x + 1] += error * 7 / 16
+                if y + 1 < h:
+                    if x - 1 >= 0:
+                        arr[y + 1, x - 1] += error * 3 / 16
+                    arr[y + 1, x] += error * 5 / 16
+                    if x + 1 < w:
+                        arr[y + 1, x + 1] += error * 1 / 16
+        result = np.clip(arr, 0, 255).astype(np.uint8)
+        return Image.fromarray(result)
+
+    # 無 dithering：向量化最近色
+    arr = np.array(img, dtype=np.float32)
     flat = arr.reshape(-1, 3)
-    # 用矩陣運算找最近顏色
     dists = np.sum((flat[:, None, :] - pal[None, :, :]) ** 2, axis=2)
     indices = np.argmin(dists, axis=1)
     result = pal[indices].reshape(arr.shape).astype(np.uint8)
     return Image.fromarray(result)
 
 
-def pixelate(img, grid_size, cell_w, cell_h, palette=None):
-    """將圖片像素化，可選套用調色盤"""
+def pixelate(img, grid_size, cell_w, cell_h, palette=None, dither=False):
+    """將圖片像素化，可選套用調色盤與 dithering"""
     base = max(cell_w, cell_h)
     if grid_size >= base:
         out = img.resize((cell_w, cell_h), resample=Image.Resampling.LANCZOS)
-        return apply_palette(out, palette) if palette else out
+        return apply_palette(out, palette, dither) if palette else out
 
     small = img.resize((grid_size, grid_size), resample=Image.Resampling.LANCZOS)
     if palette:
-        small = apply_palette(small, palette)
+        small = apply_palette(small, palette, dither)
     big = small.resize((cell_w, cell_h), resample=Image.Resampling.NEAREST)
     return big
 
@@ -96,7 +124,7 @@ def pick_grid_sizes(count, cell_size, end_fraction=0.15):
     return result[:count]
 
 
-def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=None):
+def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=None, dither=False):
     cell_w = width // cols
     cell_h = height // rows
     count = cols * rows
@@ -107,7 +135,7 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
     for index, size in enumerate(grid_sizes):
         r = index // cols
         c = index % cols
-        cell = pixelate(img, size, cell_w, cell_h, palette)
+        cell = pixelate(img, size, cell_w, cell_h, palette, dither)
         banner.paste(cell, (c * cell_w, r * cell_h))
 
     output = f'{out_dir}/banner_{name}.png'
@@ -119,7 +147,7 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
     for size in grid_sizes:
         frame = img.resize((size, size), resample=Image.Resampling.LANCZOS)
         if palette:
-            frame = apply_palette(frame, palette)
+            frame = apply_palette(frame, palette, dither)
         frame = frame.resize((width, height), resample=Image.Resampling.NEAREST)
         frames.append(frame)
     gif_path = f'{out_dir}/banner_{name}.gif'
@@ -129,7 +157,7 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
     print(f"[{name}] GIF → {gif_path}")
 
 
-def main(input_path='avatar.png', out_dir='.', palette_name='original'):
+def main(input_path='avatar.png', out_dir='.', palette_name='original', dither=False):
     import os
     os.makedirs(out_dir, exist_ok=True)
 
@@ -147,7 +175,7 @@ def main(input_path='avatar.png', out_dir='.', palette_name='original'):
     suffix = f'_{palette_name}' if palette_name != 'original' else ''
 
     for name, w, h, cols, rows in PLATFORMS:
-        create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette)
+        create_banner(img, f'{name}{suffix}', w, h, cols, rows, out_dir, palette, dither)
     return 0
 
 
@@ -164,6 +192,8 @@ def cli():
     parser.add_argument('-p', '--palette', default='original',
                         choices=list(PALETTES.keys()),
                         help='Color palette (default: original)')
+    parser.add_argument('-d', '--dither', action='store_true',
+                        help='Apply Floyd-Steinberg dithering (with palette)')
     parser.add_argument('--list-palettes', action='store_true',
                         help='List available palettes and exit')
 
@@ -183,7 +213,7 @@ def cli():
         if len(unknown) > 1 and args.palette == 'original':
             args.palette = unknown[1]
 
-    return main(args.input, args.output, args.palette)
+    return main(args.input, args.output, args.palette, args.dither)
 
 
 if __name__ == '__main__':
