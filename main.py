@@ -142,18 +142,19 @@ def create_banner(img, name, width, height, cols, rows, out_dir='.', palette=Non
     banner.save(output)
     print(f"[{name}] {width}x{height} ({cols}x{rows}) → {output}")
 
-    # GIF 動畫
+    # GIF 動畫（每幀量化到 128 色以減小檔案大小）
     frames = []
     for size in grid_sizes:
         frame = img.resize((size, size), resample=Image.Resampling.LANCZOS)
         if palette:
             frame = apply_palette(frame, palette, dither)
         frame = frame.resize((width, height), resample=Image.Resampling.NEAREST)
+        frame = frame.quantize(colors=128, method=Image.Quantize.MEDIANCUT)
         frames.append(frame)
     gif_path = f'{out_dir}/banner_{name}.gif'
     durations = [300] * (len(frames) - 1) + [1500]
     frames[0].save(gif_path, save_all=True, append_images=frames[1:],
-                   duration=durations, loop=0)
+                   duration=durations, loop=0, optimize=True)
     print(f"[{name}] GIF → {gif_path}")
 
 

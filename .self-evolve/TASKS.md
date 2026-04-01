@@ -49,7 +49,7 @@ Generated: 2026-04-01
 - **Why**: Substack GIF can exceed Twitter's 5MB limit; frames saved as full RGB without quantization.
 - **Acceptance**: `banner_twitter.gif` < 2MB, `banner_substack.gif` < 3MB.
 - **Files**: `main.py` (`create_banner`)
-- **Status**: TODO
+- **Status**: DONE
 
 ### [P2] Add optional cell-label overlay showing resolution
 - **Why**: Labels like "1px", "4px" make the progression self-explanatory to viewers.
