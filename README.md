@@ -1,5 +1,7 @@
 # PixelMe
 
+[![Tests](https://github.com/InjayTseng/pixelme/actions/workflows/test.yml/badge.svg)](https://github.com/InjayTseng/pixelme/actions/workflows/test.yml)
+
 Turn any profile photo into a pixel-art progression banner for social media.
 
 ![PixelMe demo](previews/sample1/banner_twitter.gif)
