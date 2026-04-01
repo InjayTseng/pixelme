@@ -99,7 +99,7 @@ The GIF animates from 1x1 through each pixelation stage, auto-looping.
 ## Usage
 
 ```bash
-pip install Pillow numpy
+pip install -r requirements.txt
 
 # Default (reads avatar.png, outputs to current directory)
 python main.py
@@ -128,6 +128,14 @@ python main.py photo.png --size 1920x1080
 # See all options
 python main.py --help
 ```
+
+### Web UI
+
+```bash
+streamlit run app.py
+```
+
+Upload a photo, pick a platform and palette, click Generate. Download PNG or GIF directly.
 
 ## License
 
