@@ -2,6 +2,8 @@
 
 Turn any profile photo into a pixel-art progression banner for social media.
 
+![PixelMe demo](previews/sample1/banner_twitter.gif)
+
 Each banner shows your avatar evolving from a single pixel to a recognizable (but still pixelated) portrait — a visual journey through resolution.
 
 ## Inspiration
@@ -85,6 +87,15 @@ The GIF animates from 1x1 through each pixelation stage, auto-looping.
 | **NES** | ![nes](previews/sample1/banner_twitter_nes.png) |
 | **Sepia** | ![sepia](previews/sample1/banner_twitter_sepia.png) |
 
+## Features
+
+- **Animated GIF** — auto-looping de-pixelation effect (auto-plays on Twitter/X)
+- **4 color palettes** — original, GameBoy, NES, sepia (or `--all-palettes`)
+- **Floyd-Steinberg dithering** — `--dither` for smoother palette gradients
+- **Resolution labels** — `--labels` adds "Npx" text to each cell
+- **Platform presets** — Twitter, Facebook, Substack (or `--size WxH` for custom)
+- **Single platform** — `--platform twitter` to generate just one
+
 ## Usage
 
 ```bash
@@ -107,6 +118,12 @@ python main.py photo.png -p sepia --dither
 
 # With resolution labels on each cell
 python main.py photo.png --labels
+
+# Single platform only
+python main.py photo.png --platform twitter
+
+# Custom banner size (e.g. YouTube)
+python main.py photo.png --size 1920x1080
 
 # See all options
 python main.py --help
